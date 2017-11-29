@@ -44,10 +44,12 @@ def output_stmt(node):
         
     value = state.stacks.pop_value()
     
-    if type(value) is int
-        value = chr(value)
+    val = walk(value)
     
-    print(value, end='')
+    if type(val) is int:
+        val = hex(val)
+    
+    print(val)
 
 #########################################################################
 def ternary(node):
@@ -67,166 +69,101 @@ def global_var(node):
     (TICK, var) = node
     assert_match(TICK, '`')
 
-    assign_stmt(('assign',name, var_exp)) # Do a variable assignment
+    value = state.stacks.pop_value()
+    
+    state.symbol_table.declare_sym(var, value, g=True) # Do a variable assignment
 
 #########################################################################
-def plus_exp(node):
+def data(node):
     
-    (PLUS,c1,c2) = node
-    assert_match(PLUS, '+')
+    (DATA,val) = node
+    assert_match(DATA, 'data')
     
-    v1 = walk(c1)
-    v2 = walk(c2)
+    state.stacks.push_value(node)
     
-    return v1 + v2
+    return val
 
 #########################################################################
-def minus_exp(node):
+def var_exp(node):
     
-    (MINUS,c1,c2) = node
-    assert_match(MINUS, '-')
+    (VAR,sym) = node
+    assert_match(VAR, 'var')
     
-    v1 = walk(c1)
-    v2 = walk(c2)
+    value = state.symbol_table.lookup_sym(sym)
+    if value is not None:
+        state.stacks.push_value(value)
     
-    return v1 - v2
+    return sym
 
 #########################################################################
-def times_exp(node):
+def lambda_exp(node):
     
-    (TIMES,c1,c2) = node
-    assert_match(TIMES, '*')
+    (LAMBDA,varl,body) = node
+    assert_match(LAMBDA, 'lambda')
     
-    v1 = walk(c1)
-    v2 = walk(c2)
+    state.stacks.push_value(node)
     
-    return v1 * v2
-
+    return 'Output of lambda not supported yet'
+    
 #########################################################################
-def divide_exp(node):
+def var_list(node):
     
-    (DIVIDE,c1,c2) = node
-    assert_match(DIVIDE, '/')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return v1 // v2
-
-#########################################################################
-def eq_exp(node):
-    
-    (EQ,c1,c2) = node
-    assert_match(EQ, '==')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if v1 == v2 else 0
-
-#########################################################################
-def le_exp(node):
-    
-    (LE,c1,c2) = node
-    assert_match(LE, '<=')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if v1 <= v2 else 0
-
-#########################################################################
-def and_exp(node):
-    
-    (AND,c1,c2) = node
-    assert_match(AND, '&')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if (v1 and v2) else 0
-
-#########################################################################
-def or_exp(node):
-    
-    (OR,c1,c2) = node
-    assert_match(OR, '|')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if (v1 or v2) else 0
-
-#########################################################################
-def integer_exp(node):
-
-    (INTEGER, value) = node
-    assert_match(INTEGER, 'integer')
-    
-    return value
-
-#########################################################################
-def string_exp(node):
-
-    (INTEGER, value) = node
-    assert_match(INTEGER, 'string')
-    
-    return value
-
-#########################################################################
-def id_exp(node):
-    
-    (ID, name) = node
-    assert_match(ID, 'id')
-    
-    return state.symbol_table.get(name, 0)
-
-#########################################################################
-def uminus_exp(node):
-    
-    (UMINUS, exp) = node
-    assert_match(UMINUS, 'uminus')
-    
-    val = walk(exp)
-    return - val
-
-#########################################################################
-def not_exp(node):
-    
-    (NOT, exp) = node
-    assert_match(NOT, 'not')
-    
-    val = walk(exp)
-    return 0 if val != 0 else 1
-
-#########################################################################
-def paren_exp(node):
-    
-    (PAREN, exp) = node
-    assert_match(PAREN, 'paren')
-    
-    # return the valuexpe of the parenthesized expression
-    return walk(exp)
-
-#########################################################################
-def step_exp(node):
-    
-    (STEP, val) = node
-    assert_match(STEP, 'step')
-    
-    return walk(val)
-
-#########################################################################
-def value_l_exp(node):
-    
-    (VALUEL, val, val_list) = node
-    assert_match(VALUEL, 'value_l')
+    (LIST, var, var_list) = node
+    assert_match(LIST, 'var_list')
         
-    head = [walk(val)] if walk(val) is not None else []
-    tail = walk(val_list) if walk(val_list) is not None else []
+    head = [walk(var)] if walk(var) is not None else []
+    tail = walk(var_list) if walk(var_list) is not None else []
     
     return head + tail
 
+#########################################################################
+def SQ(node):
+    
+    (SQ,val) = node
+    assert_match(SQ, 'SQ')
+    
+    value = state.stacks.pop_value()
+    
+    if value[0] == 'data':
+        b = state.stacks.pop_value()
+        a = state.stacks.pop_value()
+        if value[1] > 15:
+            b = exec_bitwise(value[1] // 16, a, b)
+            a = state.stacks.pop_value()
+            
+        result = exec_bitwise(op % 16, a, b)
+        
+    elif value[1] == 'lambda':
+        stack = state.stacks.get_curr_stack()
+        (LAMBDA, var_l, body) = value
+        result = exec_lambda(walk(var_l), body, stack, fill_out=False)
+        
+    else:
+        raise ValueError("Unknown node found on stack: " + node)
+        
+    state.stacks.push_value(result)
+    
+#########################################################################
+def DQ(node):
+    
+    (DQ,val) = node
+    assert_match(DQ, 'DQ')
+    
+    value = state.stacks.pop_value()
+
+    if value[0] == 'data':
+        result = ('lambda', None, value[1])
+        
+    elif value[1] == 'lambda':
+        stack = state.stacks.get_curr_stack()
+        (LAMBDA, var_l, body) = value
+        result = exec_lambda(var_l, body, stack, fill_out=True)
+        
+    else:
+        raise ValueError("Unknown node found on stack: " + node)
+        
+    state.stacks.push_value(result)
+    
 #########################################################################
 # walk
 #########################################################################
@@ -252,8 +189,46 @@ dispatch_dict = {
     'data'    : data,
     'var'     : var_exp,
     'var_list': var_list,
-    'lambda'  : lambda_exp
+    'lambda'  : lambda_exp,
     'nil'     : nil
 }
 
+#########################################################################
+# helper functions
+#########################################################################
 
+def exec_lambda(var_l, body, stack, fill_out=False):
+    
+    state.symbol_table.push_scope()
+    state.stacks.push_stack()
+    
+    if var_l.count('%') > 1:
+        raise ValueError("Too many '%' in lambda with an input of: " + varl)
+    
+    if var_l is not None:        
+        
+        # We reverse this to match up with the stack
+        var_l.reverse()
+        found = False
+        
+        for i in var_l:
+            
+            if i == '%' and found == False:
+                var_l.reverse()
+                stack.reverse()
+                found = True
+                continue
+                
+            elif i == '%' and found == True:
+                state.symbol_table.declare_sym(i, stack)
+                
+            
+            val = stack.pop()
+            state.symbol_table.declare_sym(i, val)
+    
+        
+    state.symbol_table.pop_scope()
+    state.stacks.pop_stack()
+    
+def exec_bitwise(op, a, b):
+    return 0

@@ -27,13 +27,22 @@ class StackStack:
     #-------
     def push_value(self, value):
         # push the value in the current stack
+        if type(value) is list:
+            for i in value:
+                self.stack[self.curr_stack].append(('data',i))
+            return
+        
         scope_stack = self.stack[self.curr_stack]
         scope_stack.append(value)
 
     #-------
     def pop_value(self):
         return self.stack[self.curr_stack].pop()
-
+    
+    #-------
+    def get_curr_stack(self):
+        return self.stack[self.curr_stack]
+        
 class DictStack:
 
     #-------
@@ -87,7 +96,7 @@ class DictStack:
                 return node
 
         # not found
-        raise ValueError("{} was not declared in scope".format(sym))
+        return None
 
 
 
