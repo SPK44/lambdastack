@@ -176,7 +176,7 @@ def dump_AST(node):
 
 def _dump_AST(node, level=0):
     
-    if isinstance(node, tuple):
+    if isinstance(node, list):
         indent(level)
         nchildren = len(node) - 1
 

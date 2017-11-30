@@ -15,33 +15,41 @@ class StackStack:
         self.curr_stack += 1
 
     #-------
-    def pop_stack(self):
+    def compress_stack(self):
         # pop the left most dictionary off the stack
         if self.curr_stack == 0:
             raise ValueError("cannot pop the global stack")
         else:
-            self.stack.pop()
+            stack = self.stack.pop()
             self.curr_stack -= 1
-
+            self.stack[self.curr_stack].extend(stack)
 
     #-------
     def push_value(self, value):
         # push the value in the current stack
-        if type(value) is list:
+        if value[0] == 'lambda':
+            scope_stack = self.stack[self.curr_stack]
+            scope_stack.append(value)
+        else:
             for i in value:
-                self.stack[self.curr_stack].append(('data',i))
+                scope_stack = self.stack[self.curr_stack]
+                scope_stack.append(['data',i])
             return
         
-        scope_stack = self.stack[self.curr_stack]
-        scope_stack.append(value)
-
+        
     #-------
     def pop_value(self):
-        return self.stack[self.curr_stack].pop()
+        scope_stack = self.stack[self.curr_stack]
+        val = scope_stack.pop()
+        return val
     
     #-------
     def get_curr_stack(self):
         return self.stack[self.curr_stack]
+    
+    #-------
+    def reverse(self):
+        self.stack[self.curr_stack].reverse()
         
 class DictStack:
 

@@ -15,7 +15,7 @@ def p_instr_list(p):
     '''
     # append instr to program
     if len(p) == 3:
-        p[0] = ('seq', p[1], p[2])
+        p[0] = ['seq', p[1], p[2]]
     elif len(p) == 2:
         p[0] = p[1]
 
@@ -30,17 +30,17 @@ def p_literal_instr(p):
     '''
     # for each instr assemble the appropriate tuple
     if p[1] == '?':
-        p[0] = ('?',)
+        p[0] = ['?']
     elif p[1] == "'":
-        p[0] = ('SQ',)
+        p[0] = ['SQ']
     elif p[1] == '"':
-        p[0] = ('DQ',)
+        p[0] = ['DQ']
     elif p[1] == 'I':
-        p[0] = ('I',)
+        p[0] = ['I']
     elif p[1] == 'O':
-        p[0] = ('O',)
+        p[0] = ['O']
     elif p[1] == '`':
-        p[0] = ('`', p[2])
+        p[0] = ['`', p[2]]
     else:
         raise ValueError("unexpected symbol {}".format(p[1]))
         
@@ -50,7 +50,7 @@ def p_data_instr(p):
           | BYTE
           | CHAR
     '''
-    p[0] = ('data',p[1])
+    p[0] = ['data',p[1]]
     
 def p_through_instr(p):
     '''
@@ -65,7 +65,7 @@ def p_var(p):
         | SVAR
         | '%'
     '''
-    p[0] = ('var', p[1])
+    p[0] = ['var', p[1]]
 
 def p_var_list(p):
     '''
@@ -73,9 +73,9 @@ def p_var_list(p):
              | var
     '''
     if len(p) == 3:
-        p[0] = ('var_list', p[1], p[2])
+        p[0] = ['var_list', p[1], p[2]]
     elif len(p) == 2:
-        p[0] = p[1]
+        p[0] = ['var_list', p[1], None]
         
 def p_lambda(p):
     '''
@@ -84,15 +84,15 @@ def p_lambda(p):
     '''
     
     if len(p) > 4:
-        p[0] = ('lambda', p[2], p[4])
+        p[0] = ['lambda', p[2], p[4]]
     else:
-        p[0] = ('lambda', None, p[2]) 
+        p[0] = ['lambda', None, p[2]] 
     
 def p_empty(p):
     '''
     empty :
     '''
-    p[0] = ('nil',)
+    p[0] = ['nil']
 
 def p_error(t):
     print("Syntax error at '%s'" % t.value)
