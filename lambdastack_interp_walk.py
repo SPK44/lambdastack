@@ -35,7 +35,7 @@ def input_stmt(node):
     
     value = int(s, 16)
     
-    state.stacks.push_value(value)
+    state.stacks.push_value(['data',value])
 
 #########################################################################
 def output_stmt(node):
@@ -78,7 +78,7 @@ def global_var(node):
 
     value = state.stacks.pop_value()
     
-    state.symbol_table.declare_sym(var, value, g=True) # Do a variable assignment
+    state.symbol_table.declare_sym(walk(var), value, g=True) # Do a variable assignment
 
 #########################################################################
 def data(node):
@@ -86,7 +86,7 @@ def data(node):
     (DATA,val) = node
     assert_match(DATA, 'data')
     
-    state.stacks.push_value([val])
+    state.stacks.push_value(['data', val])
     
     return val
 
@@ -108,10 +108,7 @@ def lambda_exp(node):
     (LAMBDA,varl,body) = node
     assert_match(LAMBDA, 'lambda')
     
-    if varl is not None:
-        varl = walk(varl)
-    
-    state.stacks.push_value(['lambda',varl, body])
+    state.stacks.push_value(['lambda', varl, body])
     
     return 'Output of lambda not supported yet'
     
@@ -152,7 +149,7 @@ def SQ(node):
         exec_lambda(var_l, body, fill_out=False)
         
     else:
-        raise ValueError("Unknown node found on stack: " + node)
+        raise ValueError("Unknown node found on stack: " + str(node))
             
 #########################################################################
 def DQ(node):
@@ -216,6 +213,9 @@ def exec_lambda(var_l, body, fill_out=False):
     ### Start: Filling out the scope dictionary ### 
     if var_l is not None:        
         
+        # Actually build the list now
+        var_l = walk(var_l)
+        
         if var_l.count('%') > 1:
             raise ValueError("Too many '%' in lambda with an input of: " + varl)
         
@@ -266,5 +266,14 @@ def build_seq(l):
         return ['nil']
     
     seq = ['seq', l.pop(0)]
+    seq.append(build_seq(l))
+    return seq
+
+def build_var_l(l):
+    
+    if len(l) == 0:
+        return ['nil']
+    
+    seq = ['var_list', l.pop(0)]
     seq.append(build_seq(l))
     return seq

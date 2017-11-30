@@ -26,16 +26,9 @@ class StackStack:
 
     #-------
     def push_value(self, value):
-        # push the value in the current stack
-        if value[0] == 'lambda':
-            scope_stack = self.stack[self.curr_stack]
-            scope_stack.append(value)
-        else:
-            for i in value:
-                scope_stack = self.stack[self.curr_stack]
-                scope_stack.append(['data',i])
-            return
-        
+        scope_stack = self.stack[self.curr_stack]
+        scope_stack.append(value)
+
         
     #-------
     def pop_value(self):
@@ -87,6 +80,10 @@ class DictStack:
         # at this scope
         if sym in self.scoped_symtab[scope]:
             raise ValueError("symbol {} already declared".format(sym))
+            
+        # then we need to check whether the symbol was declared
+        if sym in self.scoped_symtab[0]:
+            raise ValueError("symbol {} already declared globally".format(sym))
         
         # enter the symbol in the current scope
         scope_dict = self.scoped_symtab[scope]

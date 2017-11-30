@@ -20,6 +20,8 @@ def t_SVAR(t):
 
 def t_NAME(t):
     r'[(][a-zG-Z]+[)]'
+    # strip parentheses
+    t.value = t.value[1:-1]
     return t
 
 def t_HEX(t):
