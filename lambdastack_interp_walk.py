@@ -2,8 +2,10 @@
 
 from lambdastack_state import state
 from lambdastack_fill_var_walk import walk_fill_out
-from grammar_stuff import assert_match, dump_AST
+from lambdastack_pp_walk import walk_pp
+from grammar_stuff import assert_match
 import sys
+
 
 #########################################################################
 # node functions
@@ -43,15 +45,9 @@ def output_stmt(node):
     (O,) = node
     assert_match(O, 'O')
     
-    print(state.stacks.get_curr_stack())
     value = state.stacks.pop_value()
-    print(state.stacks.get_curr_stack())
-    dump_AST(state.AST)
     
-    val = walk(value)
-    
-    if type(val) is int:
-        val = hex(val)
+    val = walk_pp(value)
     
     print(val)
 
@@ -88,8 +84,6 @@ def data(node):
     
     state.stacks.push_value(['data', val])
     
-    return val
-
 #########################################################################
 def var_exp(node):
     
@@ -109,9 +103,7 @@ def lambda_exp(node):
     assert_match(LAMBDA, 'lambda')
     
     state.stacks.push_value(['lambda', varl, body])
-    
-    return 'Output of lambda not supported yet'
-    
+        
 #########################################################################
 def var_list(node):
     
@@ -138,11 +130,11 @@ def SQ(node):
         b = state.stacks.pop_value()
         a = state.stacks.pop_value()
         if value[1] > 15:
-            b = exec_bitwise(value[1] // 16, a, b)
+            b = exec_bitwise(value[1] // 16, a[1], b[1])
             a = state.stacks.pop_value()
             
-        result = exec_bitwise(value[1] % 16, a, b)
-        a = state.stacks.push_value(['data',result])
+        result = exec_bitwise(value[1] % 16, a[1], b[1])
+        state.stacks.push_value(['data',result])
         
     elif value[0] == 'lambda':
         (LAMBDA, var_l, body) = value
@@ -258,7 +250,27 @@ def exec_lambda(var_l, body, fill_out=False):
     state.stacks.compress_stack()
     
 def exec_bitwise(op, a, b):
-    return 0
+ 
+    result = {
+        0: lambda a,b: 0,
+        1: lambda a,b:  ~a & ~b,
+        2: lambda a,b:  ~a &  b,
+        3: lambda a,b:  ~a,
+        4: lambda a,b:  a  & ~b,
+        5: lambda a,b:  ~b,
+        6: lambda a,b:  a  ^  b,
+        7: lambda a,b:  ~a | ~b,
+        8: lambda a,b:  a  &  b,
+        9: lambda a,b:  ~a ^  b,
+        10: lambda a,b: b,
+        11: lambda a,b: ~a |  b,
+        12: lambda a,b: a,
+        13: lambda a,b: a  | ~b,
+        14: lambda a,b: a  |  b,
+        15: lambda a,b: 1,
+    }[op](a,b)
+        
+    return result
 
 def build_seq(l):
     
