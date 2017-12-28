@@ -1,7 +1,6 @@
 # A tree walker to interpret ubasic programs
 
 from grammar_stuff import assert_match
-import sys
 
 #########################################################################
 # node functions

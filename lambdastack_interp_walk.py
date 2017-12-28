@@ -4,7 +4,6 @@ from lambdastack_state import state
 from lambdastack_fill_var_walk import walk_fill_out
 from lambdastack_pp_walk import walk_pp
 from grammar_stuff import assert_match
-import sys
 
 
 #########################################################################

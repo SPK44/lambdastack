@@ -2,7 +2,6 @@
 
 from lambdastack_state import state
 from grammar_stuff import assert_match
-import sys
 
 #########################################################################
 # node functions
