@@ -250,26 +250,26 @@ def exec_lambda(var_l, body, fill_out=False):
     state.stacks.compress_stack()
     
 def exec_bitwise(op, a, b):
- 
+    
     result = {
         0: lambda a,b: 0,
-        1: lambda a,b:  ~a & ~b,
-        2: lambda a,b:  ~a &  b,
-        3: lambda a,b:  ~a,
-        4: lambda a,b:  a  & ~b,
-        5: lambda a,b:  ~b,
+        1: lambda a,b:  (a ^ 0xFF) & (b ^ 0xFF),
+        2: lambda a,b:  (a ^ 0xFF) &  b,
+        3: lambda a,b:  (a ^ 0xFF),
+        4: lambda a,b:  a  & (b ^ 0xFF),
+        5: lambda a,b:  (b ^ 0xFF),
         6: lambda a,b:  a  ^  b,
-        7: lambda a,b:  ~a | ~b,
+        7: lambda a,b:  (a ^ 0xFF) | (b ^ 0xFF),
         8: lambda a,b:  a  &  b,
-        9: lambda a,b:  ~a ^  b,
+        9: lambda a,b:  (a ^ 0xFF) ^  b,
         10: lambda a,b: b,
-        11: lambda a,b: ~a |  b,
+        11: lambda a,b: (a ^ 0xFF) |  b,
         12: lambda a,b: a,
-        13: lambda a,b: a  | ~b,
+        13: lambda a,b: a  | (b ^ 0xFF),
         14: lambda a,b: a  |  b,
         15: lambda a,b: 1,
     }[op](a,b)
-        
+               
     return result
 
 def build_seq(l):
