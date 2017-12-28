@@ -175,7 +175,7 @@ def walk(node):
         node_function = dispatch_dict[node_type]
         return node_function(node)
     else:
-        raise ValueError("walk: unknown tree node type: " + node_type)
+        raise ValueError("walk: unknown tree node type: " + node_type + "\n Please report this to language author.")
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
