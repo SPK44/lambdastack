@@ -8,7 +8,10 @@ def main():
 
 	while True:
 		
-		input_stream = input()
+		try:
+			input_stream = input()
+		except EOFError:
+			return
 
 		# initialize the state object
 		state.initialize()
